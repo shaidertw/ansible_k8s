@@ -1,0 +1,95 @@
+- name: Installs containerd
+  apt: name=containerd state=latest update_cache=true
+  
+- name: сreate directory for config file containerd
+  file: 
+    path: /etc/containerd
+    state: directory
+  
+- name: Reload service containerd
+  ansible.builtin.systemd:
+    name: containerd.service 
+    state: restarted
+
+- name: Loading a module br_netfilter into the kernel
+  command: modprobe br_netfilter
+
+- name: Add netbridge config ip6
+  lineinfile:
+    path: /etc/sysctl.d/kubernetes.conf
+    line: 'net.bridge.bridge-nf-call-ip6tables = 1'
+    state: present
+    create: yes
+
+- name: Add netbridge config ip4
+  lineinfile:
+    path: /etc/sysctl.d/kubernetes.conf
+    line: 'net.bridge.bridge-nf-call-iptables = 1'
+    state: present
+    create: yes
+
+- name: Update sysctl
+  command: sysctl --system; sysctl net.ipv4.ip_forward=1
+
+    
+- name: enable ipv4 ip_forward
+  command: sysctl net.ipv4.ip_forward=1
+
+- copy:
+    content: net.ipv4.ip_forward = 1
+    dest: /etc/sysctl.conf   
+
+
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+
+- name: Turn swap off
+  shell: swapoff -a
+
+- name: Add an apt signing key for Kubernetes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Adding apt repository for Kubernetes
+  apt_repository: 
+    filename: kubernetes.list
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+  
+- name: Install Kubernetes binaries
+  apt: 
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars: 
+    packages: 
+      - kubelet
+      - kubeadm
+      - kubectl
+
+- name: Restart kubelet
+  service: 
+    daemon_reload: true
+    name: kubelet
+    state: restarted
+
+- name: Generate join token
+  shell: kubeadm token create --print-join-command
+  register: kubeadm_join_cmd
+  delegate_to: "{{ groups['masters'][0] }}"
+
+- set_fact:
+    kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
+
+- debug: var=kubeadm_join
+
+- name: Store join command
+  action: copy content="{{ kubeadm_join }}" dest="/etc/kubernetes/kubeadm-join.command"
+
+- name: Run kubeadm join
+  shell: "{{ kubeadm_join }} --ignore-preflight-errors=swap"
+

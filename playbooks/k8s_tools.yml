@@ -1,0 +1,5 @@
+- name: Install kubernetes tools
+  hosts: K8s_cluster
+  gather_facts: yes
+  roles:
+    - k8s

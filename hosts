@@ -1,0 +1,17 @@
+[localmachine]
+workstation ansible_host=localhost
+
+[etcds]
+etcd ansible_ssh_host=10.1.0.57
+
+[masters]
+master ansible_ssh_host=10.1.0.58
+
+[workers]
+kworker1 ansible_ssh_host=10.1.0.59
+kworker2 ansible_ssh_host=10.1.0.60
+kworker3 ansible_ssh_host=10.1.0.61
+
+[K8s_cluster:children]
+masters
+workers

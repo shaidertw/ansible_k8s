@@ -1,0 +1,21 @@
+{
+  "CN": "etcd",
+  "hosts": [
+    "localhost",
+    "127.0.0.1",
+    "10.1.0.57"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "GB",
+      "L": "England",
+      "O": "Kubernetes",
+      "OU": "etcd",
+      "ST": "Cambridge"
+    }
+  ]
+}

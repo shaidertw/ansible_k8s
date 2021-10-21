@@ -1,0 +1,9 @@
+---
+# vars file for k8s
+packages: 
+  - kubelet
+  - kubeadm
+  - kubectl
+docker:
+  - docker
+  - docker.io

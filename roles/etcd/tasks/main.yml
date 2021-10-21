@@ -1,0 +1,40 @@
+---
+# tasks file for etcd
+- name: Download binaries etcd
+  get_url:          
+    url: https://github.com/etcd-io/etcd/releases/download/{{ETCD_VER}}/etcd-{{ETCD_VER}}-linux-amd64.tar.gz
+    dest: /tmp/
+    mode: "0710"
+
+- name: Unzip etcd
+  unarchive:
+    src: /tmp/etcd-{{ETCD_VER}}-linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: yes
+
+- name: Install etcd
+  copy:
+    src: /tmp/etcd-{{ ETCD_VER }}-linux-amd64/etcd
+    dest: /usr/local/bin/etcd
+    mode: 0710
+    remote_src: yes
+
+- name: Install etcdctl
+  copy:
+    src: /tmp/etcd-{{ ETCD_VER }}-linux-amd64/etcdctl
+    dest: /usr/local/bin/etcdctl
+    mode: 0710
+    remote_src: yes
+
+
+- name: Copy etcd config file
+  copy:
+    src: etcd.service
+    dest: /etc/systemd/system/etcd.service
+
+- name: Start and enable etcd
+  systemd:
+    name: etcd
+    enabled: yes
+    daemon_reload: yes
+    state: restarted

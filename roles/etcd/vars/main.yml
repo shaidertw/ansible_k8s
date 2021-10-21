@@ -1,0 +1,3 @@
+---
+# vars file for etcd
+ETCD_VER: v3.5.1

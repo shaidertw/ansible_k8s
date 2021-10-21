@@ -1,0 +1,6 @@
+- name: Install docker
+  hosts: masters
+  gather_facts: yes
+  roles:
+    - copy-certs-etcd-to-master
+    - masters

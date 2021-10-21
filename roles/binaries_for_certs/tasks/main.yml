@@ -1,0 +1,42 @@
+---
+# tasks file for binaries_for_certs
+- name: Download cfssl
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/1.4.1/linux/cfssl
+    dest: /usr/local/bin/
+    mode: '+x'
+- name: Download cfssljson
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/1.4.1/linux/cfssljson
+    dest: /usr/local/bin/
+    mode: '+x'
+ 
+- name: Copy local ca-cert files to remote etcd
+  copy:
+    src: certs/
+    dest: /etc/etcd/pki
+    directory_mode: true
+
+- name: Generate CA certs 
+  shell: |
+    cd /etc/etcd/pki
+    cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+ 
+- name: Generate etcd client certs
+  shell: |
+    cd /etc/etcd/pki
+    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=etcd etcd-csr.json | cfssljson -bare etcd
+
+- name: Copy remote files to local host
+  become: yes
+  fetch:
+    src: /etc/etcd/pki/{{item}}
+    dest: /tmp/etcd/{{item}}
+    flat: yes
+  with_items:
+    - ca.pem 
+    - etcd.pem 
+    - etcd-key.pem
+
+
+

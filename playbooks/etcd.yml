@@ -1,0 +1,6 @@
+- name: Install etcd
+  hosts: etcds
+  gather_facts: yes
+  roles:
+    - binaries_for_certs
+    - etcd 

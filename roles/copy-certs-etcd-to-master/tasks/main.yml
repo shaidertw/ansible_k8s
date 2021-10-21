@@ -1,0 +1,15 @@
+---
+# tasks file for copy-certs-etcd-to-master
+- name: Creates /etc/kubernetes/pki/etcd directory
+  file:
+    path: /etc/kubernetes/pki/etcd
+    state: directory
+
+- name: Transfer file from etcd to master
+  copy: 
+    src: "/tmp/etcd/{{item}}"
+    dest: "/etc/kubernetes/pki/etcd/{{item}}"
+  with_items:
+    - ca.pem 
+    - etcd.pem 
+    - etcd-key.pem

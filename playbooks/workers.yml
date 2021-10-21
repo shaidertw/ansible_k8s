@@ -1,0 +1,5 @@
+- name: Add new worker
+  hosts: workers
+  gather_facts: yes
+  roles:
+    - workers
